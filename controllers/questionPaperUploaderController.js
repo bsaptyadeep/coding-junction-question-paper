@@ -6,9 +6,9 @@ const questionPaperUpload = async (req, res, next) => {
         console.log(req.body.data)
         const data = JSON.parse(req.body.data)
         const paper = new QuestionPaper({
-            fileName: req.file.originalname,
-            filePath: req.file.path,
-            fileType: req.file.mimetype,
+            fileName: req.file.filename,
+            filePath: "/api/question-paper/"+req.file.filename,
+            fileType: req.file.contentType,
             fileSize: fileSizeFormatter(req.file.size, 2),
             subjectCode: data.subjectCode,
             subjectName: data.subjectName,
@@ -26,17 +26,27 @@ const questionPaperUpload = async (req, res, next) => {
 }
 
 const getallQuestionPapers = async (req, res, next) => {
-    try{
-        const files = await QuestionPaper.find();
+    try {
+        var semester = req.query.semester;
+        var branch = req.query.branch;
+        let files = await QuestionPaper.find();
+        if (semester)
+            files = files.filter((ob) => {
+                return semester == ob.semester
+            })
+        if (branch)
+            files = files.filter((ob) => {
+                return branch == ob.branch
+            })
         res.status(200).send(files);
-    }catch(error) {
+    } catch (error) {
         res.status(400).send(error.message);
     }
 }
 
 
 const fileSizeFormatter = (bytes, decimal) => {
-    if(bytes === 0){
+    if (bytes === 0) {
         return '0 Bytes';
     }
     const dm = decimal || 2;
